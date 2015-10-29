@@ -1,2 +1,2 @@
 # hazelcast-rpc
-RPC based on Hazelcast
+Implement RPC based on Hazelcast
