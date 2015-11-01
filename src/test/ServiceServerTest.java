@@ -1,9 +1,10 @@
-package cn.zhl.hazalcastrpc.test;
+package test;
+
+import cn.zhl.hazalcastrpc.Service;
+import cn.zhl.hazalcastrpc.ServiceRegistry;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-
-import cn.zhl.hazalcastrpc.ServiceRegistry;
 
 public class ServiceServerTest {
 
@@ -11,7 +12,7 @@ public class ServiceServerTest {
 		HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance();
 		ServiceRegistry.getInstance().setHazelcastInstance(hazelcastInstance);
 		
-		HelloService helloService = new HelloServiceImpl();
+		Service helloService = new HelloServiceImpl();
 		ServiceRegistry.getInstance().bind(HelloService.class, helloService);
 	}
 	

@@ -3,15 +3,19 @@ package cn.zhl.hazalcastrpc;
 import java.lang.reflect.Proxy;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
 
 public class ServiceRegistry {
 	private static ServiceRegistry instance = null;
 	
-	private HazelcastInstance hazelcastInstance;
-	private String myAddr;
+	public static final String HACELCASTRPC_SERVICE_MAP      = "HazelcastRPC-ServiceMap";
+	public static final String HACELCASTRPC_INVOCATION_TOPIC = "HazelcastRPC-InvocationTopic";
+	public static final String HACELCASTRPC_REPLY_TOPIC      = "HazelcastRPC-ReplyTopic";
+	public static final String HACELCASTRPC_INVOCATION_ID    = "HazelcastRPC-InvocationID";
 	
-	private IMap<Class<? extends Service>, ServiceBindingInfo> bindedServices;
+	public static final long DEFAULT_SERVICE_TIMEOUT = 5000;
+	
+	private HazelcastInstance hz;
+	private ServiceSkeleton serviceSkeleton;
 	
 	private ServiceRegistry(){
 	}
@@ -23,50 +27,45 @@ public class ServiceRegistry {
 		return instance;
 	}
 	
-	public void setHazelcastInstance(HazelcastInstance hazelcastInstance){
-		this.hazelcastInstance = hazelcastInstance;
-		this.myAddr = hazelcastInstance.getCluster().getLocalMember().getSocketAddress().toString();
-		
-		this.bindedServices = hazelcastInstance.getMap("HazelcastRPC-BindedServiceMap");
+	public void setHazelcastInstance(HazelcastInstance hz){
+		this.hz = hz;
+		this.serviceSkeleton = new ServiceSkeleton(hz);
 	}
 	
 	private void checkInitialization(){
-		if(hazelcastInstance == null){
+		if(hz == null){
 			throw new RuntimeException("The ServiceRegistry is not initialized");
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	public <T extends Service> T getService(Class<T> svcClass) throws ServiceNotBindException{
-		checkInitialization();
-		bindedServices.lock(svcClass);
-			try{
-			ServiceBindingInfo svcInfo = bindedServices.get(svcClass);
-			if(svcInfo == null){
-				throw new ServiceNotBindException("Service "+svcClass.getName()+" is not binded");
-			}
-			
-			ServiceInvocationHandler<T> invocationHandler = new ServiceInvocationHandler<T>(bindedServices, svcClass);
-			return (T)Proxy.newProxyInstance(svcClass.getClassLoader(), new Class<?>[]{svcClass}, invocationHandler);
-		}finally{
-			bindedServices.unlock(svcClass);
-		}
+	public <T extends Service> T getService(Class<T> svcClass) throws ServiceNotBindException, NoRouteToServiceException{
+		return getService(svcClass, new DefaultServiceRouting(svcClass, serviceSkeleton), DEFAULT_SERVICE_TIMEOUT);
 	}
 	
-	public <T extends Service> void bind(Class<T> svcClass, T svcImpl){
+	public <T extends Service> T getService(Class<T> svcClass, long serviceTimeout) throws ServiceNotBindException, NoRouteToServiceException{
+		return getService(svcClass, new DefaultServiceRouting(svcClass, serviceSkeleton), serviceTimeout);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends Service> T getService(Class<T> svcClass, ServiceRouting routing, long serviceTimeout) throws ServiceNotBindException, NoRouteToServiceException{
 		checkInitialization();
-		bindedServices.lock(svcClass);
-		try{
-			ServiceBindingInfo svcInfo = bindedServices.get(svcClass);
-			if(svcInfo == null){
-				svcInfo = new ServiceBindingInfo();
-			}
-			svcInfo.bindSource(myAddr, svcImpl);
-			
-			bindedServices.put(svcClass, svcInfo);
-		}finally{
-			bindedServices.unlock(svcClass);
+
+		ServiceTarget target = routing.getTarget();
+		Service svcImpl = serviceSkeleton.getServiceImpl(svcClass, target);
+		if(svcImpl == null){
+			throw new ServiceNotBindException("Service "+svcClass.getName()+" is not provided by target "+target.toString());
 		}
+		
+		ServiceStub serviceStub = new ServiceStub(hz, routing, serviceTimeout);
+		return (T)Proxy.newProxyInstance(svcClass.getClassLoader(), new Class<?>[]{svcClass}, serviceStub);
+	}
+	
+	public <T extends Service> void bind(Class<T> svcClass, Service svcImpl) {
+		checkInitialization();
+		if(svcImpl.getClass().isAssignableFrom(svcClass)){
+			throw new RuntimeException(svcImpl.getClass().getName()+" is not the implementation of "+svcClass.getName());
+		}
+		serviceSkeleton.bind(svcClass, svcImpl);
 	}
 	
 }

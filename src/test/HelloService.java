@@ -1,9 +1,9 @@
-package cn.zhl.hazalcastrpc.test;
+package test;
 
 import cn.zhl.hazalcastrpc.Service;
 
 public interface HelloService extends Service {
 
-	String sayHello(String hello);
+	String sayHello(String who);
 	
 }
