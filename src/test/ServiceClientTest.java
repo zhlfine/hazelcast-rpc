@@ -14,7 +14,7 @@ public class ServiceClientTest {
 		ServiceRegistry.getInstance().setHazelcastInstance(hazelcastInstance);
 
 		HelloService helloService = ServiceRegistry.getInstance().getService(HelloService.class);
-		String hello = helloService.sayHello("hzhou");
+		String hello = helloService.sayHello("Godson");
 		System.out.println(hello);
 	}
 	

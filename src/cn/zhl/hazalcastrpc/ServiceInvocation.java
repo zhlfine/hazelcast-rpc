@@ -51,14 +51,6 @@ public class ServiceInvocation implements Serializable {
 	public Class<?> getServiceClass() {
 		return serviceClass;
 	}
-
-	public String getMethodName() {
-		return methodName;
-	}
-
-	public Object[] getArgs() {
-		return args;
-	}
 	
 	public String toString(){
 		return "InvocationID "+invocationId+", target "+target.toString()+", "+serviceClass.getName()+"."+methodName+"("+Arrays.toString(args)+")";
