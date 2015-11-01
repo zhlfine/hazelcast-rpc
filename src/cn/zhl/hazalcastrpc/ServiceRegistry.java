@@ -46,6 +46,10 @@ public class ServiceRegistry {
 		return getService(svcClass, new DefaultServiceRouting(svcClass, serviceSkeleton), serviceTimeout);
 	}
 	
+	public <T extends Service> T getService(Class<T> svcClass, ServiceRouting routing) throws ServiceNotBindException, NoRouteToServiceException{
+		return getService(svcClass, routing, DEFAULT_SERVICE_TIMEOUT);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public <T extends Service> T getService(Class<T> svcClass, ServiceRouting routing, long serviceTimeout) throws ServiceNotBindException, NoRouteToServiceException{
 		checkInitialization();
