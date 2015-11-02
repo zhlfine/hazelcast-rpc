@@ -53,14 +53,7 @@ public class ServiceRegistry {
 	@SuppressWarnings("unchecked")
 	public <T extends Service> T getService(Class<T> svcClass, ServiceRouting routing, long serviceTimeout) throws ServiceNotBindException, NoRouteToServiceException{
 		checkInitialization();
-
-		ServiceTarget target = routing.getTarget();
-		Service svcImpl = serviceSkeleton.getServiceImpl(svcClass, target);
-		if(svcImpl == null){
-			throw new ServiceNotBindException("Service "+svcClass.getName()+" is not provided by target "+target.toString());
-		}
-		
-		ServiceStub serviceStub = new ServiceStub(hz, routing, serviceTimeout);
+		ServiceStub serviceStub = new ServiceStub(hz, svcClass, serviceSkeleton, routing, serviceTimeout);
 		return (T)Proxy.newProxyInstance(svcClass.getClassLoader(), new Class<?>[]{svcClass}, serviceStub);
 	}
 	

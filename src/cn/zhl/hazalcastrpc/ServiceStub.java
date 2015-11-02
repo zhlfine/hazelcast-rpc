@@ -18,6 +18,8 @@ public class ServiceStub implements InvocationHandler, MessageListener<ServiceRe
 	
 	private long timeout;
 	
+	private Class<?> svcClass;
+	private ServiceSkeleton serviceSkeleton;
 	private ServiceRouting routing;
 	private ServiceTarget myAddr;
 	
@@ -27,10 +29,13 @@ public class ServiceStub implements InvocationHandler, MessageListener<ServiceRe
 	
 	private ConcurrentHashMap<Long, ServiceReply> replyMap = new ConcurrentHashMap<Long, ServiceReply>();
 
-	public ServiceStub(HazelcastInstance hz, ServiceRouting routing, long timeout){
-		this.myAddr = new ServiceTarget(hz.getCluster().getLocalMember());
+	public ServiceStub(HazelcastInstance hz, Class<?> svcClass, ServiceSkeleton serviceSkeleton, ServiceRouting routing, long timeout){
+		this.svcClass = svcClass;
+		this.serviceSkeleton = serviceSkeleton;
 		this.routing = routing;
 		this.timeout = timeout;
+		
+		this.myAddr = new ServiceTarget(hz.getCluster().getLocalMember());
 		
 		this.invocationTopic = hz.getTopic(ServiceRegistry.HACELCASTRPC_INVOCATION_TOPIC);
 		this.replyTopic = hz.getTopic(ServiceRegistry.HACELCASTRPC_REPLY_TOPIC);
@@ -41,6 +46,11 @@ public class ServiceStub implements InvocationHandler, MessageListener<ServiceRe
 	
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		ServiceTarget target = routing.getTarget();
+		Service svcImpl = serviceSkeleton.getServiceImpl(svcClass, target);
+		if(svcImpl == null){
+			throw new ServiceNotBindException("Service "+svcClass.getName()+" is not provided by target "+target.toString());
+		}
+		
 		Long invocationId = idGenerator.newId();
 		Class<?> svcClass = proxy.getClass().getInterfaces()[0];
 		ServiceInvocation invocation = new ServiceInvocation(invocationId, myAddr, target, svcClass, method, args);
