@@ -1,4 +1,4 @@
-package cn.zhl.hazalcastrpc;
+package cn.zhl.hazelcastrpc;
 
 public class ServiceRemoteException extends Exception {
 	private static final long serialVersionUID = 1L;

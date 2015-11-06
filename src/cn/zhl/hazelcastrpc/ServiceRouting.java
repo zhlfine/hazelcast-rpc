@@ -1,4 +1,4 @@
-package cn.zhl.hazalcastrpc;
+package cn.zhl.hazelcastrpc;
 
 public interface ServiceRouting {
 

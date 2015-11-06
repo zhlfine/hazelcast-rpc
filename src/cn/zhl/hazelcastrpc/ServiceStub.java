@@ -1,4 +1,4 @@
-package cn.zhl.hazalcastrpc;
+package cn.zhl.hazelcastrpc;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

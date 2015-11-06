@@ -1,6 +1,6 @@
 package test;
 
-import cn.zhl.hazalcastrpc.Service;
+import cn.zhl.hazelcastrpc.Service;
 
 public interface HelloService extends Service {
 

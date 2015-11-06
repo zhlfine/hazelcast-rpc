@@ -1,7 +1,7 @@
 package test;
 
-import cn.zhl.hazalcastrpc.Service;
-import cn.zhl.hazalcastrpc.ServiceRegistry;
+import cn.zhl.hazelcastrpc.Service;
+import cn.zhl.hazelcastrpc.ServiceRegistry;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;

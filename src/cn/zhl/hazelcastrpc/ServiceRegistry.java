@@ -1,4 +1,4 @@
-package cn.zhl.hazalcastrpc;
+package cn.zhl.hazelcastrpc;
 
 import java.lang.reflect.Proxy;
 

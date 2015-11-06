@@ -1,8 +1,8 @@
 package test;
 
-import cn.zhl.hazalcastrpc.NoRouteToServiceException;
-import cn.zhl.hazalcastrpc.ServiceNotBindException;
-import cn.zhl.hazalcastrpc.ServiceRegistry;
+import cn.zhl.hazelcastrpc.NoRouteToServiceException;
+import cn.zhl.hazelcastrpc.ServiceNotBindException;
+import cn.zhl.hazelcastrpc.ServiceRegistry;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
